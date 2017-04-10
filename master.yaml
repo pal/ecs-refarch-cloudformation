@@ -19,7 +19,7 @@ Resources:
     VPC:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://raw.githubusercontent.com/pal/ecs-refarch-cloudformation/master/infrastructure/vpc.yaml
+            TemplateURL: https://s3-eu-west-1.amazonaws.com/sse-server/cloudformation/a/infrastructure/vpc.yaml
             Parameters:
                 EnvironmentName:    !Ref AWS::StackName
                 VpcCIDR:            10.180.0.0/16
@@ -31,7 +31,7 @@ Resources:
     SecurityGroups:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://raw.githubusercontent.com/pal/ecs-refarch-cloudformation/master/infrastructure/security-groups.yaml
+            TemplateURL: https://s3-eu-west-1.amazonaws.com/sse-server/cloudformation/a/infrastructure/security-groups.yaml
             Parameters: 
                 EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
@@ -39,7 +39,7 @@ Resources:
     ALB:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://raw.githubusercontent.com/pal/ecs-refarch-cloudformation/master/infrastructure/load-balancers.yaml
+            TemplateURL: https://s3-eu-west-1.amazonaws.com/sse-server/cloudformation/a/infrastructure/load-balancers.yaml
             Parameters:
                 EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
@@ -49,7 +49,7 @@ Resources:
     ECS:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://raw.githubusercontent.com/pal/ecs-refarch-cloudformation/master/infrastructure/ecs-cluster.yaml
+            TemplateURL: https://s3-eu-west-1.amazonaws.com/sse-server/cloudformation/a/infrastructure/ecs-cluster.yaml
             Parameters:
                 EnvironmentName: !Ref AWS::StackName
                 InstanceType: t2.micro
@@ -61,8 +61,9 @@ Resources:
     ProductService:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://raw.githubusercontent.com/pal/ecs-refarch-cloudformation/master/services/product-service/service.yaml
+            TemplateURL: https://s3-eu-west-1.amazonaws.com/sse-server/cloudformation/a/services/product-service/service.yaml
             Parameters:
+                EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
                 Cluster: !GetAtt ECS.Outputs.Cluster
                 DesiredCount: 2
@@ -72,8 +73,9 @@ Resources:
     WebsiteService:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://raw.githubusercontent.com/pal/ecs-refarch-cloudformation/master/services/website-service/service.yaml
+            TemplateURL: https://s3-eu-west-1.amazonaws.com/sse-server/cloudformation/a/services/website-service/service.yaml
             Parameters:
+                EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
                 Cluster: !GetAtt ECS.Outputs.Cluster
                 DesiredCount: 2

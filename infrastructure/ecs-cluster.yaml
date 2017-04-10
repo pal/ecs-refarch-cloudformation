@@ -167,7 +167,7 @@ Resources:
                     }]
                 }
             Policies: 
-                - PolicyName: ecs-service
+                - PolicyName: !Sub ${EnvironmentName}-ECSRole-${AWS::Region}-Policy
                   PolicyDocument: |
                     {
                         "Statement": [{
