@@ -1,6 +1,5 @@
 Description: >
-    This is an example of a long running ECS service that needs to connect to another ECS service (product-service)
-    via it's load balancer. We use environment variables to pass the URL of the product-service to this one's container(s).
+    SSE Mock Operator. Responding to requests at /v1/admin/*.
 
 Parameters: 
 
@@ -13,17 +12,13 @@ Parameters:
         Type: AWS::EC2::VPC::Id
         
     Cluster:
-        Description: Please provide the ECS Cluster ID that this service should run on
+        Description: The ECS Cluster ID that this service should run on
         Type: String
 
     DesiredCount: 
         Description: How many instances of this task should we run across our cluster?
         Type: Number
-        Default: 2
-
-    ProductServiceUrl:
-        Description: The URL of the Product Service (used to fetch product information)
-        Type: String
+        Default: 1
 
     Listener:
         Description: The Application Load Balancer listener to register with
@@ -32,7 +27,7 @@ Parameters:
     Path: 
         Description: The path to register with the Application Load Balancer
         Type: String
-        Default: /
+        Default: /v1/admin/*
 
 Resources:
 
@@ -45,30 +40,27 @@ Resources:
             DesiredCount: !Ref DesiredCount
             TaskDefinition: !Ref TaskDefinition
             LoadBalancers: 
-                - ContainerName: "website-service"
-                  ContainerPort: 8000
+                - ContainerName: "mock-operator"
+                  ContainerPort: 80
                   TargetGroupArn: !Ref TargetGroup
 
     TaskDefinition:
         Type: AWS::ECS::TaskDefinition
         Properties:
-            Family: website-service
+            Family: mock-operator
             ContainerDefinitions:
-                - Name: website-service
+                - Name: mock-operator
                   Essential: true
-                  Image: 275396840892.dkr.ecr.us-east-1.amazonaws.com/ecs-refarch-cloudformation/website-service:1.0.0
+                  Image: 898444668884.dkr.ecr.eu-west-2.amazonaws.com/sse-mock-operator:latest
                   Memory: 128
-                  Environment: 
-                    - Name: PRODUCT_SERVICE_URL
-                      Value: !Ref ProductServiceUrl
                   PortMappings:
-                    - ContainerPort: 8000
+                    - ContainerPort: 8080
                   LogConfiguration:
                     LogDriver: awslogs
                     Options:
                         awslogs-group: !Ref AWS::StackName
                         awslogs-region: !Ref AWS::Region
-
+    
     CloudWatchLogsGroup:
         Type: AWS::Logs::LogGroup
         Properties: 
@@ -84,7 +76,7 @@ Resources:
             Matcher: 
                 HttpCode: 200-299
             HealthCheckIntervalSeconds: 10
-            HealthCheckPath: /
+            HealthCheckPath: /version
             HealthCheckProtocol: HTTP
             HealthCheckTimeoutSeconds: 5
             HealthyThresholdCount: 2
@@ -93,7 +85,7 @@ Resources:
         Type: AWS::ElasticLoadBalancingV2::ListenerRule
         Properties:
             ListenerArn: !Ref Listener
-            Priority: 11
+            Priority: 1
             Conditions:
                 - Field: path-pattern
                   Values: 
@@ -108,7 +100,7 @@ Resources:
     ServiceRole: 
         Type: AWS::IAM::Role
         Properties: 
-            RoleName: !Sub ${EnvironmentName}-SvcRole-Website
+            RoleName: !Sub ${EnvironmentName}-SvcRole-MockOperator
             Path: /
             AssumeRolePolicyDocument: |
                 {
@@ -119,7 +111,7 @@ Resources:
                     }]
                 }
             Policies: 
-                - PolicyName: !Sub ${EnvironmentName}-SvcRole-Website-Policy
+                - PolicyName: !Sub ${EnvironmentName}-SvcRole-MockOperator-Policy
                   PolicyDocument: 
                     {
                         "Version": "2012-10-17",
@@ -139,4 +131,3 @@ Resources:
                                 "Resource": "*"
                         }]
                     }
-

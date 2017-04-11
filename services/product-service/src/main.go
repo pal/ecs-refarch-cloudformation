@@ -35,6 +35,12 @@ func main() {
 				Description: "Holds 6 unbroken eggs or 36 broken ones",
 				Price:       9.99,
 			},
+			product{
+				ID:          "0000-0000-0004",
+				Title:       "Spinning Top",
+				Description: "Spinning, spinning, spinning. Yay!",
+				Price:       16.99,
+			},
 		}
 
 		c.IndentedJSON(200, products)
